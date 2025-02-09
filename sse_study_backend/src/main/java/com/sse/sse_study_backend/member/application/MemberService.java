@@ -11,6 +11,7 @@ import com.sse.sse_study_backend.member.domain.Member;
 import com.sse.sse_study_backend.member.domain.repository.MemberRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
 
     @Transactional
@@ -27,7 +29,7 @@ public class MemberService {
         Member member = memberRepository.save(
                 Member.builder()
                         .name(memberSaveReqDto.name())
-                        .pwd(memberSaveReqDto.pwd())
+                        .pwd(passwordEncoder.encode(memberSaveReqDto.pwd()))
                         .build()
         );
 
@@ -38,13 +40,17 @@ public class MemberService {
         Member member = memberRepository.findByName(memberLoginReqDto.name())
                 .orElseThrow(() -> new IllegalArgumentException("존재 하지 않는 사용자입니다."));
 
-        if (!member.getPwd().equals(memberLoginReqDto.pwd())) {
-            throw new IllegalArgumentException("패스워드가 일치하지 않습니다.");
-        }
-
+        validatePassword(memberLoginReqDto.pwd(), member.getPwd());
+        
         TokenDto tokenDto = tokenProvider.generateToken(String.valueOf(member.getId()));
 
         return MemberLoginResDto.from(tokenDto.accessToken());
+    }
+
+    private void validatePassword(CharSequence loginPwd, String memberPwd) {
+        if (!passwordEncoder.matches(loginPwd, memberPwd)) {
+            throw new IllegalArgumentException("패스워드가 일치하지 않습니다.");
+        }
     }
 
     public MemberInfoResDto info(Long memberId) {

@@ -20,8 +20,8 @@ public class NotificationService {
     private final MemberRepository memberRepository;
     private final NotificationRepository notificationRepository;
 
-    public SseEmitter connect(Long memberId, String lastEventId) {
-        return sseEmitterManager.connect(memberId, lastEventId);
+    public SseEmitter connect(Long memberId) {
+        return sseEmitterManager.connect(memberId);
     }
 
     @Transactional
