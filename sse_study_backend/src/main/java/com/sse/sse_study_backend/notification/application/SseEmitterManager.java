@@ -4,9 +4,11 @@ import com.sse.sse_study_backend.member.domain.Member;
 import com.sse.sse_study_backend.notification.domain.repository.EmitterRepository;
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -16,27 +18,32 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class SseEmitterManager {
 
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60 * 24;
+    private static final String SERVER_ID = UUID.randomUUID().toString();
+
+    private final RedisTemplate<String, String> redisTemplate;
 
     private final EmitterRepository emitterRepository;
 
-    public SseEmitter connect(final Long memberId, String lastEventId) {
+    public SseEmitter connect(final Long memberId) {
         String emitterId = memberId + "_" + System.currentTimeMillis();
         SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(DEFAULT_TIMEOUT));
 
+        redisTemplate.opsForHash().put("sse_connections", emitterId, SERVER_ID);
+
         emitter.onCompletion(() -> {
             log.info("비동기 요청 완료");
-            emitterRepository.deleteById(emitterId);
+            removeEmitter(emitterId);
         });
 
         emitter.onTimeout(() -> {
             log.info("시간 초과");
             emitter.complete();
-            emitterRepository.deleteById(emitterId);
+            removeEmitter(emitterId);
         });
 
         emitter.onError((e) -> {
             log.error("에러 발생", e);
-            emitterRepository.deleteById(emitterId);
+            removeEmitter(emitterId);
         });
 
         sendToClient(emitter, emitterId, "이벤트 스트림 생성 memberId: " + memberId);
@@ -48,11 +55,12 @@ public class SseEmitterManager {
         Map<String, SseEmitter> sseEmitters = emitterRepository
                 .findAllEmitterStartWithByMemberId(String.valueOf(targetMember.getId()));
 
-        sseEmitters.forEach(
-                (key, emitter) -> {
-                    sendToClient(emitter, key, message);
-                }
-        );
+        for (Map.Entry<String, SseEmitter> entry : sseEmitters.entrySet()) {
+            String key = entry.getKey();
+            SseEmitter emitter = entry.getValue();
+
+            sendToClient(emitter, key, message);
+        }
     }
 
     private void sendToClient(SseEmitter emitter, String emitterId, Object data) {
@@ -61,7 +69,7 @@ public class SseEmitterManager {
                     .id(emitterId)
                     .data(data));
         } catch (IOException exception) {
-            emitterRepository.deleteById(emitterId);
+            removeEmitter(emitterId);
 
             try {
                 throw new BadRequestException("전송 실패");
@@ -69,6 +77,11 @@ public class SseEmitterManager {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private void removeEmitter(String emitterId) {
+        emitterRepository.deleteById(emitterId);
+        redisTemplate.opsForHash().delete("sse_connections", emitterId);
     }
 
 }

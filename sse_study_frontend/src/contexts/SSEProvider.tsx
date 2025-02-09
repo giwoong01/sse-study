@@ -56,10 +56,9 @@ export const SSEProvider: React.FC<SSEProviderProps> = ({ children }) => {
     eventSourceRef.current.onerror = (e: any) => {
       // 종료 또는 에러 발생 시 할 일
       console.error("SSE 에러 발생", e);
-
-      if (eventSourceRef.current) {
-        console.log("SSE 연결 종료됨");
-      }
+      setTimeout(() => {
+        connectToSSE();
+      }, 3000);
     };
   }, [setData]);
 
