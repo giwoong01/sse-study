@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSSE } from "../contexts/SSEProvider.tsx";
 import styled from "styled-components";
 import Button from "../components/Button.tsx";
 import { Notifications } from "../types/Notification.ts";
@@ -8,7 +7,6 @@ import { NotificationsApi } from "../api/NotificaitonApi.ts";
 
 const Notification: React.FC = () => {
   const navigate = useNavigate();
-  const { data } = useSSE();
   const [notifications, setNotifications] = useState<Notifications>();
 
   const handleHomeClick = () => {
@@ -40,10 +38,6 @@ const Notification: React.FC = () => {
           notifications?.map((item, index) => (
             <ListItem key={index}>{item.message}</ListItem>
           ))}
-
-        {data.map((item, index) => (
-          <ListItem key={index}>{item}</ListItem>
-        ))}
       </List>
       <Button onClick={handleHomeClick}>홈으로 이동</Button>
     </Container>

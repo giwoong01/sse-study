@@ -5,13 +5,11 @@ import React, {
   useCallback,
   useRef,
   ReactNode,
-  useState,
 } from "react";
 import { EventSourcePolyfill } from "event-source-polyfill";
+import { useToast } from "../hooks/useToast.ts";
 
-interface SSEContextType {
-  data: any[];
-}
+interface SSEContextType {}
 
 const SSEContext = createContext<SSEContextType | undefined>(undefined);
 
@@ -21,9 +19,8 @@ interface SSEProviderProps {
 }
 
 export const SSEProvider: React.FC<SSEProviderProps> = ({ children }) => {
-  const [data, setData] = useState<any[]>([]);
-
   const eventSourceRef = useRef<EventSourcePolyfill | null>(null);
+  const { showToast } = useToast();
 
   const connectToSSE = useCallback(() => {
     if (eventSourceRef.current?.readyState === 1) {
@@ -45,7 +42,11 @@ export const SSEProvider: React.FC<SSEProviderProps> = ({ children }) => {
 
     eventSourceRef.current.onmessage = (event) => {
       // 받아오는 데이터로 할 일
-      setData((prevData) => [...prevData, event.data]);
+      const hasNoSuccessMessage = !event.data.includes("이벤트 스트림 생성");
+
+      if (hasNoSuccessMessage) {
+        showToast(`새로운 데이터: ${JSON.stringify(event.data)}`);
+      }
     };
 
     eventSourceRef.current.onopen = () => {
@@ -60,7 +61,7 @@ export const SSEProvider: React.FC<SSEProviderProps> = ({ children }) => {
         connectToSSE();
       }, 3000);
     };
-  }, [setData]);
+  }, [showToast]);
 
   useEffect(() => {
     connectToSSE();
@@ -70,7 +71,7 @@ export const SSEProvider: React.FC<SSEProviderProps> = ({ children }) => {
     };
   }, [connectToSSE]);
 
-  return <SSEContext.Provider value={{ data }}>{children}</SSEContext.Provider>;
+  return <SSEContext.Provider value={{}}>{children}</SSEContext.Provider>;
 };
 
 export const useSSE = () => {

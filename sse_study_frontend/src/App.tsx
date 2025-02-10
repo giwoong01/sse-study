@@ -5,6 +5,7 @@ import { SSEProvider } from "./contexts/SSEProvider.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import Notification from "./pages/Notification.tsx";
 import RegisterPage from "./pages/RegisterPage.tsx";
+import { ToastContainer } from "react-toastify";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
                 <Route path="/home" element={<Home />} />
                 <Route path="/notification" element={<Notification />} />
               </Routes>
+              <ToastContainer position="top-left" />
             </SSEProvider>
           }
         ></Route>
