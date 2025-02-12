@@ -15,4 +15,6 @@ public interface EmitterRepository {
 
     void deleteAllEmitterStartWithId(String memberId);
 
+    SseEmitter findById(String emitterId);
+    
 }

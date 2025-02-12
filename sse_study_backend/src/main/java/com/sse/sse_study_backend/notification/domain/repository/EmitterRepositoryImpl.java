@@ -40,4 +40,9 @@ public class EmitterRepositoryImpl implements EmitterRepository {
         );
     }
 
+    @Override
+    public SseEmitter findById(String emitterId) {
+        return emitters.get(emitterId);
+    }
+    
 }

@@ -43,6 +43,10 @@ dependencies {
 
     // Security
     implementation 'org.springframework.security:spring-security-crypto:5.8.0'
+
+    // Kafka
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.kafka:spring-kafka'
 }
 
 tasks.named('test') {
