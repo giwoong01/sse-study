@@ -19,7 +19,6 @@ const Notification: React.FC = () => {
         const response = await NotificationsApi();
 
         if (response) {
-          console.log(response);
           setNotifications(response);
         }
       } catch (error) {
