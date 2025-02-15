@@ -24,6 +24,11 @@ public class LoginTokenCheckFilter extends GenericFilterBean {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
+        if (isPreflightRequest(httpRequest) || isPublicEndpoint(httpRequest.getRequestURI())) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         String token = resolveToken(httpRequest);
 
         if (token == null || !tokenProvider.validateToken(token)) {
@@ -32,6 +37,14 @@ public class LoginTokenCheckFilter extends GenericFilterBean {
         }
 
         chain.doFilter(request, response);
+    }
+
+    private boolean isPreflightRequest(HttpServletRequest request) {
+        return "OPTIONS".equalsIgnoreCase(request.getMethod());
+    }
+
+    private boolean isPublicEndpoint(String requestURI) {
+        return "/api".equals(requestURI) || "/api/login".equals(requestURI);
     }
 
     private String resolveToken(HttpServletRequest request) {

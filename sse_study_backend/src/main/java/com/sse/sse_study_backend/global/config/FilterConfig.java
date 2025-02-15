@@ -18,7 +18,6 @@ public class FilterConfig {
         FilterRegistrationBean<LoginTokenCheckFilter> filterRegistrationBean = new FilterRegistrationBean<>();
         filterRegistrationBean.setFilter(new LoginTokenCheckFilter(tokenProvider));
         filterRegistrationBean.setOrder(1);
-        filterRegistrationBean.addUrlPatterns("/api/**");
         return filterRegistrationBean;
     }
 
