@@ -194,25 +194,37 @@ Kafka는 일반적으로 여러 서버에서 운영되지만, 이번 테스트�
 추가적으로 Kafka 설정 시, @KafkaListener와 설정 파일을 통해 Consumer Group(groupId)을 설정할 수 있습니다.
 groupId는 Kafka Consumer Group을 식별하는 ID로, 메시지의 소비 방식에 영향을 줍니다.
 
-다음 세 가지 상황을 배포된 환경에서 테스트할 예정입니다.
+저는 serverId를 Key로 사용하여 메시지를 각 서버에 정확히 전달하여 상대방에게 보내는게 목적이므로 동일한 groupId를 사용해도 무방하다고 생각합니다.
 
-1. 같은 groupId를 사용할 경우 어떤 동작이 발생할까?
-   - 여러 개의 서버가 같은 groupId를 가지면, 메시지를 서로 나눠서 처리하는지 확인해야 합니다.
-   - 예를 들어, 두 개의 서버(A, B)가 같은 groupId를 가지고 있으면
-     - 서버 A가 한 메시지를 처리하면, 서버 B는 해당 메시지를 받지 않는지 확인
-     - 즉, 동일한 메시지를 중복 처리하는 경우가 없는지 테스트
-2. 서버가 여러 개일 때 groupId의 역할은?
-   - 여러 개의 서버가 같은 groupId를 가지면, Kafka가 메시지를 분산 처리하는지 확인해야 합니다.
-   - 즉, 각 서버가 균등하게 메시지를 처리하는지 확인
-   - (단, serverId가 Key로 설정되었기 때문에 같은 serverId를 가진 메시지는 특정 서버에서만 처리된다는 점을 고려)
+그러면 Consumer Group(groupId)은 어떤 상황에서 잘 사용할 수 있을까요?
 
-이 2가지 상황과 Kafka 브로커가 잘 작동하는지 배포된 환경에서 멀티 서버를 두고 테스트 해보겠습니다.
+일단 제가 사용한 방법인 실시간 알림 상황에서는 동일한 groupId를 사용하여 메시지의 중복 소비를 방지합니다. 그 외 상황으로는 전체 공지나, 로그를 백업하거나 분석하는 부분에서는 서버마다 다른 groupId를 활용합니다.
+
+- 전체 공지 같은 작업은 서로 다른 groupId를 통해 같은 메시지를 여러 Consumer에게 전달할 수 있습니다.
+  - 같은 Consumer Group에 있으면 동일한 Partition 내에서 하나의 Consumer에게만 메시지를 할당하기 때문입니다.
+    - 메시지를 모두에게 보내고 싶어도 하나의 서버만 메시지를 처리합니다.
+- 로그를 백업하거나 분석하는 부분에서는 별도의 Consumer Group으로 독립적으로 처리합니다.
+  - 로그백(디스코드, 슬랙)을 위한 groupId 별도 부여
+
+예를 들면 이와 같습니다.
+
+| 서버 이름 | 실시간 알림 Topic | 실시간 알림 groupId | 전체 공지 Topic | 전체 공지 groupId |
+| :-------: | :---------------: | :-----------------: | :-------------: | :---------------: |
+| Server A  | sse_notifications |      sse-group      |    broadcast    |   serverA-group   |
+| Server B  | sse_notifications |      sse-group      |    broadcast    |   serverB-group   |
+| Server C  | sse_notifications |      sse-group      |    broadcast    |   serverC-group   |
+
+여러 상황에서 groupId를 잘 활용한다면 다양한 처리를 쉽게 설계할 수 있을 것 같습니다.
+
+다음 과정에서는 Kafka 브로커가 잘 작동하는지 배포된 환경에서 멀티 포트 서버를 두고 테스트 해보겠습니다.
 
 ---
 
 ### [4. 배포 환경 세팅]
 
 [연결된 이슈](https://github.com/giwoong01/sse-study/issues/4)
+
+Kafka 브로커가 잘 작동하는지 확인하기 전에 서버를 먼저 세팅하도록 하겠습니다.
 
 서버는 오라클 클라우드를 사용하여 배포합니다.
 운영체제는 우분투 기반으로 무료 인스턴스를 사용합니다.
