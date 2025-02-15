@@ -21,6 +21,9 @@ SSE를 선택한 이유는, 이전에 진행한 끄적끄적 프로젝트에서 
 | event-source-polyfill | Server-Sent Events (SSE) |
 |           -           |          MySQL           |
 |           -           |          Redis           |
+|           -           |          Kafka           |
+|           -           |        Zookeeper         |
+|           -           |  Docker, Docker Compose  |
 
 <br>
 
@@ -45,6 +48,7 @@ SSE를 선택한 이유는, 이전에 진행한 끄적끄적 프로젝트에서 
 1. [SSE 연결 프론트엔드, 백엔드 세팅](#1-sse-연결-프론트엔드-백엔드-세팅)
 2. [SSE 연결 상태 캐시 도입](#2-sse-연결-상태-캐시-도입)
 3. [메시지 브로커 Kafka 도입](#3-메시지-브로커-kafka-도입)
+4. [배포 환경 세팅](#4-배포-환경-세팅)
 
 ### [1. SSE 연결 프론트엔드, 백엔드 세팅]
 
@@ -123,6 +127,8 @@ Context API를 활용하여 SSE 관리를 함으로써 SSE연결은 전역적으
 이미 백엔드에서 SSE 연동 로직을 구현을 해두었기때문에,
 추가적으로 필요한 부분은 서버와 연동하면서 수정할 예정입니다.
 
+---
+
 ### [2. SSE 연결 상태 캐시 도입]
 
 [연결된 이슈](https://github.com/giwoong01/sse-study/issues/2)
@@ -158,6 +164,8 @@ Value: SERVER_ID        ("399a6ff8-e8ba-478f-8136-81a9699bf841")
 
 이를 해결하기 위해 메시지 브로커 Kafka를 도입하여 멀티 서버 환경에서도 문제 없이 알림이 가도록 해결해보도록 하겠습니다.
 
+---
+
 ### [3. 메시지 브로커 Kafka 도입]
 
 [연결된 이슈](https://github.com/giwoong01/sse-study/issues/3)
@@ -167,7 +175,7 @@ Value: SERVER_ID        ("399a6ff8-e8ba-478f-8136-81a9699bf841")
 Kafka는 분산 환경에서 안정적인 데이터 스트리밍을 지원하는 메시지 브로커입니다.
 이를 활용하면 멀티 서버 환경에서도 효율적인 이벤트 전파와 메시지 처리가 가능합니다.
 
-Kafka는 일반적으로 여러 서버에서 운영되지만, 이번 테스트에서는 단일 서버 환경에서 동작을 검증하겠습니다.
+Kafka는 일반적으로 여러 서버에서 운영되지만, 이번 테스트에서는 단일 서버 환경에서 포트를 나누어 동작을 검증하겠습니다.
 
 |               `동작과정`               |
 | :------------------------------------: |
@@ -199,3 +207,50 @@ groupId는 Kafka Consumer Group을 식별하는 ID로, 메시지의 소비 방�
    - (단, serverId가 Key로 설정되었기 때문에 같은 serverId를 가진 메시지는 특정 서버에서만 처리된다는 점을 고려)
 
 이 2가지 상황과 Kafka 브로커가 잘 작동하는지 배포된 환경에서 멀티 서버를 두고 테스트 해보겠습니다.
+
+---
+
+### [4. 배포 환경 세팅]
+
+[연결된 이슈](https://github.com/giwoong01/sse-study/issues/4)
+
+서버는 오라클 클라우드를 사용하여 배포합니다.
+운영체제는 우분투 기반으로 무료 인스턴스를 사용합니다.
+
+서버 내부에 MySQL, Java, Nginx, CertBot, Docker, Docker Compose를 설치합니다.
+
+Spring Boot App과 Redis, Kafka, Zookeeper 는 Docker Compose를 활용하여 실행해주겠습니다.
+
+Docker Compose를 사용한 이유는 Redis, Kafka, Zookeeper, Spring Boot App 등 여러 서비스를 단일 파일로 쉽게 정의할 수 있기 때문입니다. 그리고 또 서비스 간 의존성과 연결을 자동화하여 복잡한 설정을 제거하고, 컨테이너의 재구성, 확장이 매우 쉽기 때문입니다.
+
+추가적으로 이 과정을 수작업으로 환경을 구성할 경우 복잡성이 크게 증가합니다. Docker Compose를 사용함으로써 효율적으로 환경을 구성할 수 있습니다.
+
+<img src="images/5.png" width="400" />
+
+<img src="images/6.png" width="900" />
+
+Spring Boot App은 포트를 달리하여 2개를 열어주겠습니다.
+
+NGINX를 활용하여 포트 기반 로드 밸런싱 테스트를 진행하기 위함입니다.
+
+- 포트 기반 로드 밸런싱
+
+  <img src="images/7.png" width="400" />
+  <img src="images/8.png" width="400" />
+
+  라운드 로빈 방식으로 로드 밸런싱을 구현합니다.
+
+- SSE 연결 설정 Location 블록
+
+  <img src="images/9.png" width="900" />
+
+  SSE 연결은 클라이언트-서버 간 지속적인 연결을 필요로 하기 때문에, CORS 요청과 프리플라이트 OPTIONS 요청 처리가 중요합니다.
+  그리고 Timeout과 cache 설정을 통해 안정적이고 실시간적인 SSE 연결을 유지하도록 합니다.
+
+NGINX 설정까지 마치면 서버 세팅은 끝이 났습니다.
+
+마지막으로 Vercel을 사용하여 프론트 엔드 배포를 하면 세팅은 끝입니다.
+
+[서비스 링크](https://sse-study.vercel.app/)
+
+---
