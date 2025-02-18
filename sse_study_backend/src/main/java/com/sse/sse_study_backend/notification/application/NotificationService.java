@@ -2,6 +2,7 @@ package com.sse.sse_study_backend.notification.application;
 
 import com.sse.sse_study_backend.member.domain.Member;
 import com.sse.sse_study_backend.member.domain.repository.MemberRepository;
+import com.sse.sse_study_backend.member.exception.MemberNotFoundException;
 import com.sse.sse_study_backend.notification.api.dto.response.NotificationsResDto;
 import com.sse.sse_study_backend.notification.domain.Notification;
 import com.sse.sse_study_backend.notification.domain.repository.NotificationRepository;
@@ -26,10 +27,8 @@ public class NotificationService {
 
     @Transactional
     public void send(Long memberId, Long targetMemberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재 하지 않는 사용자입니다."));
-        Member targetMember = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재 하지 않는 사용자입니다."));
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
+        Member targetMember = memberRepository.findById(targetMemberId).orElseThrow(MemberNotFoundException::new);
 
         String message = "name: " + member.getName() + "님이 알림을 보냈습니다.";
 
@@ -42,8 +41,7 @@ public class NotificationService {
     }
 
     public NotificationsResDto getNotifications(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재 하지 않는 사용자입니다."));
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
 
         List<Notification> allByReceiver = notificationRepository.findAllByReceiver(member);
 

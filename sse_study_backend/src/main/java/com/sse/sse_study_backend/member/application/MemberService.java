@@ -9,6 +9,8 @@ import com.sse.sse_study_backend.member.api.dto.response.MemberLoginResDto;
 import com.sse.sse_study_backend.member.api.dto.response.MembersInfoResDto;
 import com.sse.sse_study_backend.member.domain.Member;
 import com.sse.sse_study_backend.member.domain.repository.MemberRepository;
+import com.sse.sse_study_backend.member.exception.MemberNotFoundException;
+import com.sse.sse_study_backend.member.exception.PasswordMismatchException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,11 +39,10 @@ public class MemberService {
     }
 
     public MemberLoginResDto login(MemberLoginReqDto memberLoginReqDto) {
-        Member member = memberRepository.findByName(memberLoginReqDto.name())
-                .orElseThrow(() -> new IllegalArgumentException("존재 하지 않는 사용자입니다."));
+        Member member = memberRepository.findByName(memberLoginReqDto.name()).orElseThrow(MemberNotFoundException::new);
 
         validatePassword(memberLoginReqDto.pwd(), member.getPwd());
-        
+
         TokenDto tokenDto = tokenProvider.generateToken(String.valueOf(member.getId()));
 
         return MemberLoginResDto.from(tokenDto.accessToken());
@@ -49,13 +50,12 @@ public class MemberService {
 
     private void validatePassword(CharSequence loginPwd, String memberPwd) {
         if (!passwordEncoder.matches(loginPwd, memberPwd)) {
-            throw new IllegalArgumentException("패스워드가 일치하지 않습니다.");
+            throw new PasswordMismatchException();
         }
     }
 
     public MemberInfoResDto info(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재 하지 않는 사용자입니다."));
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
 
         return MemberInfoResDto.from(member.getId(), member.getName());
     }

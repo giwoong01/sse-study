@@ -44,7 +44,7 @@ public class LoginTokenCheckFilter extends GenericFilterBean {
     }
 
     private boolean isPublicEndpoint(String requestURI) {
-        return "/api".equals(requestURI) || "/api/login".equals(requestURI);
+        return "/api/members".equals(requestURI) || "/api/members/login".equals(requestURI);
     }
 
     private String resolveToken(HttpServletRequest request) {

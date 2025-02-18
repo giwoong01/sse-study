@@ -5,6 +5,8 @@ import com.sse.sse_study_backend.global.error.exception.AccessDeniedGroupExcepti
 import com.sse.sse_study_backend.global.error.exception.AuthGroupException;
 import com.sse.sse_study_backend.global.error.exception.InvalidGroupException;
 import com.sse.sse_study_backend.global.error.exception.NotFoundGroupException;
+import com.sse.sse_study_backend.notification.exception.EmitterCallbackException;
+import com.sse.sse_study_backend.notification.exception.SendFailedException;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -49,6 +51,17 @@ public class ControllerAdvice {
         log.error(e.getMessage());
 
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler({
+            EmitterCallbackException.class,
+            SendFailedException.class
+    })
+    public ResponseEntity<ErrorResponse> handleEmitterErrorDate(RuntimeException e) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+        log.error(e.getMessage());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // Validation 관련 예외 처리

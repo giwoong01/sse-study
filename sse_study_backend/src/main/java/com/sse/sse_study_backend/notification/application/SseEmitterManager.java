@@ -2,11 +2,12 @@ package com.sse.sse_study_backend.notification.application;
 
 import com.sse.sse_study_backend.member.domain.Member;
 import com.sse.sse_study_backend.notification.domain.repository.EmitterRepository;
+import com.sse.sse_study_backend.notification.exception.EmitterCallbackException;
+import com.sse.sse_study_backend.notification.exception.SendFailedException;
 import java.io.IOException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -31,6 +32,14 @@ public class SseEmitterManager {
 
         redisTemplate.opsForHash().put("sse_connections", emitterId, SERVER_ID);
 
+        registerEmitterCallbacks(emitter, emitterId);
+
+        sendToClient(emitter, emitterId, "이벤트 스트림 생성 memberId: " + memberId);
+
+        return emitter;
+    }
+
+    private void registerEmitterCallbacks(SseEmitter emitter, String emitterId) {
         emitter.onCompletion(() -> {
             log.info("비동기 요청 완료");
             removeEmitter(emitterId);
@@ -43,13 +52,9 @@ public class SseEmitterManager {
         });
 
         emitter.onError((e) -> {
-            log.error("에러 발생", e);
             removeEmitter(emitterId);
+            throw new EmitterCallbackException("Emitter 에러발생", e);
         });
-
-        sendToClient(emitter, emitterId, "이벤트 스트림 생성 memberId: " + memberId);
-
-        return emitter;
     }
 
     public void send(Member targetMember, String message) {
@@ -69,16 +74,11 @@ public class SseEmitterManager {
                     .data(data));
         } catch (IOException exception) {
             removeEmitter(emitterId);
-
-            try {
-                throw new BadRequestException("전송 실패");
-            } catch (BadRequestException e) {
-                throw new RuntimeException(e);
-            }
+            throw new SendFailedException("전송 실패", exception);
         }
     }
 
-    private void removeEmitter(String emitterId) {
+    public void removeEmitter(String emitterId) {
         emitterRepository.deleteById(emitterId);
         redisTemplate.opsForHash().delete("sse_connections", emitterId);
     }
