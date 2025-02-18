@@ -5,7 +5,7 @@ import { axiosInstance } from "../utils/apiConfig.tsx";
 export const MemberRegisterApi = async (name: string, pwd: string): Promise<boolean> => {
     try {
         const response = await axios.post(
-            `${process.env.REACT_APP_API_BASE_URL}`,
+            `${process.env.REACT_APP_API_BASE_URL}/members`,
             { name, pwd }
         );
 
