@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MemberInfoApi, MemberListApi } from "../api/MemberApi.ts";
+import {
+  MemberInfoApi,
+  MemberListApi,
+  MemberLogoutApi,
+} from "../api/MemberApi.ts";
 import { MemberInfo, MembersInfo } from "../types/MemberInfo.ts";
 import styled from "styled-components";
 import Button from "../components/Button.tsx";
@@ -12,8 +16,12 @@ const Home: React.FC = () => {
   const [allMembers, setAllMembers] = useState<MembersInfo>();
   const { handleSend } = useSendMessage();
 
-  const handleLoginPageClick = () => {
-    navigate("/");
+  const handleLoginPageClick = async () => {
+    const logoutSuccess = await MemberLogoutApi();
+
+    if (logoutSuccess) {
+      navigate("/");
+    }
   };
 
   const handleNotificationClick = () => {
