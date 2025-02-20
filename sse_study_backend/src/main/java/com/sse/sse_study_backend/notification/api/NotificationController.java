@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -26,9 +26,9 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.connect(memberId));
     }
 
-    @PostMapping("/send")
+    @PostMapping("/send/{targetMemberId}")
     public ResponseEntity<String> send(@AuthenticatedMemberId Long memberId,
-                                       @RequestParam Long targetMemberId) {
+                                       @PathVariable Long targetMemberId) {
         notificationService.send(memberId, targetMemberId);
         return ResponseEntity.ok("OK");
     }

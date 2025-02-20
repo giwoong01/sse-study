@@ -11,6 +11,7 @@ import com.sse.sse_study_backend.member.domain.Member;
 import com.sse.sse_study_backend.member.domain.repository.MemberRepository;
 import com.sse.sse_study_backend.member.exception.MemberNotFoundException;
 import com.sse.sse_study_backend.member.exception.PasswordMismatchException;
+import com.sse.sse_study_backend.notification.exception.MemberAlreadyExistsException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +29,8 @@ public class MemberService {
 
     @Transactional
     public Long save(MemberSaveReqDto memberSaveReqDto) {
+        checkIfMemberExists(memberSaveReqDto.name());
+
         Member member = memberRepository.save(
                 Member.builder()
                         .name(memberSaveReqDto.name())
@@ -36,6 +39,13 @@ public class MemberService {
         );
 
         return member.getId();
+    }
+
+    private void checkIfMemberExists(String name) {
+        memberRepository.findByName(name)
+                .ifPresent(m -> {
+                    throw new MemberAlreadyExistsException("이미 존재하는 회원입니다.");
+                });
     }
 
     public MemberLoginResDto login(MemberLoginReqDto memberLoginReqDto) {
