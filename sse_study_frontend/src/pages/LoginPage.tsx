@@ -22,7 +22,7 @@ const LoginPage: React.FC = () => {
         navigate("/home");
       }
     } catch (error) {
-      console.error("로그인 실패:", error);
+      alert(error.message);
     }
   };
 

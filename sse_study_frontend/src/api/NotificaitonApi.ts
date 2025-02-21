@@ -9,7 +9,7 @@ export const NotificationsApi = async (): Promise<Notifications | undefined> => 
 
         return response.data.notifications as Notifications;
     } catch (error) {
-        console.error("전송 실패:", error);
+        console.error(error);
         return undefined;
     }
 }

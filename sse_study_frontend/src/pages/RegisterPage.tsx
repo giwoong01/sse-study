@@ -29,7 +29,7 @@ const RegisterPage: React.FC = () => {
         navigate("/");
       }
     } catch (error) {
-      console.error("회원가입 실패:", error);
+      alert(error.message);
     }
   };
 

@@ -19,8 +19,12 @@ const Home: React.FC = () => {
   const handleLoginPageClick = async () => {
     const logoutSuccess = await MemberLogoutApi();
 
-    if (logoutSuccess) {
-      navigate("/");
+    try {
+      if (logoutSuccess) {
+        navigate("/");
+      }
+    } catch (error) {
+      alert(error.message);
     }
   };
 
@@ -28,8 +32,13 @@ const Home: React.FC = () => {
     navigate("/notification");
   };
 
-  const handleSendMessage = (targetMemberId: number) => {
-    handleSend(targetMemberId);
+  const handleSendMessage = async (targetMemberId: number) => {
+    try {
+      await handleSend(targetMemberId);
+      alert("메시지가 성공적으로 전송되었습니다.");
+    } catch (error: any) {
+      alert(error.message);
+    }
   };
 
   useEffect(() => {

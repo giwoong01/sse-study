@@ -13,7 +13,7 @@ export const MemberRegisterApi = async (name: string, pwd: string): Promise<bool
             return true;
         }
     } catch (error) {
-        console.error(error);
+        throw new Error(error.response?.data?.message || "회원가입에 실패했습니다.");
     }
 
     return false;
@@ -30,7 +30,7 @@ export const MemberLoginApi = async (name: string, pwd: string): Promise<MemberI
             return response.data as MemberInfo;
         }
     } catch (error) {
-        console.error(error);
+        throw new Error(error.response?.data?.message || "로그인에 실패했습니다.");
     }
 };
 
@@ -67,6 +67,6 @@ export const MemberLogoutApi = async (): Promise<boolean | undefined> => {
             return true;
         }
     } catch (error) {
-        console.error(error);
+        throw new Error(error.response?.data?.message || "로그아웃에 실패했습니다.");
     }
 }

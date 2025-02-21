@@ -22,6 +22,11 @@ export const SSEProvider: React.FC<SSEProviderProps> = ({ children }) => {
   const eventSourceRef = useRef<EventSourcePolyfill | null>(null);
   const { showToast } = useToast();
 
+  const closeEventSource = () => {
+    eventSourceRef.current?.close();
+    eventSourceRef.current = null;
+  };
+
   const connectToSSE = useCallback(() => {
     if (eventSourceRef.current?.readyState === 1) {
       console.log("이미 SSE에 연결되어 있습니다.");
@@ -45,7 +50,7 @@ export const SSEProvider: React.FC<SSEProviderProps> = ({ children }) => {
       const hasNoSuccessMessage = !event.data.includes("이벤트 스트림 생성");
 
       if (hasNoSuccessMessage) {
-        showToast(`새로운 데이터: ${JSON.stringify(event.data)}`);
+        showToast(`${JSON.stringify(event.data)}`);
       }
     };
 
@@ -57,8 +62,7 @@ export const SSEProvider: React.FC<SSEProviderProps> = ({ children }) => {
     eventSourceRef.current.onerror = (e: any) => {
       // 종료 또는 에러 발생 시 할 일
       console.error("SSE 에러 발생", e);
-      eventSourceRef.current?.close();
-      eventSourceRef.current = null;
+      closeEventSource();
       setTimeout(() => {
         connectToSSE();
       }, 3000);
@@ -69,8 +73,7 @@ export const SSEProvider: React.FC<SSEProviderProps> = ({ children }) => {
     connectToSSE();
 
     return () => {
-      eventSourceRef.current?.close();
-      eventSourceRef.current = null;
+      closeEventSource();
     };
   }, [connectToSSE]);
 
