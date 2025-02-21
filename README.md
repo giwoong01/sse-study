@@ -12,31 +12,6 @@ SSE를 선택한 이유는, 이전에 진행한 끄적끄적 프로젝트에서 
 
 <br>
 
-## 🛠 기술 스택
-
-### 🖥️ Frontend
-
-- React
-- Typescript
-- Styled Components
-- event-source-polyfill
-- Vercel
-
-### 💯 Backend
-
-- Spring boot
-- Java
-- Server-Sent Events (SSE)
-- MySQL
-- Redis
-- Kafka
-- Zookeeper
-- Docker, Docker Compose,
-- Oracle Cloud
-- Nginx
-
-<br>
-
 ## ⭐️ 목표
 
 - 서버와 클라이언트 간 실시간 이벤트 처리 구조에 대해 심층적으로 학습하고, 이를 다양한 상황에서 분석 및 응용합니다.
@@ -339,3 +314,28 @@ NGINX 설정까지 마치면 서버 세팅은 끝이 났습니다.
 이번 프로젝트는 단순히 기능적인 추가 이상의 도전이었습니다. 서비스가 당면한 기술적 요구뿐만 아니라, 장기적인 확장성과 안정성을 고려한 설계였다고 믿습니다. 하지만 아직은 실제 사용자 트래픽과 피드백을 통해 이런 선택들이 오버엔지니어링인지 아닌지 면밀히 확인해볼 시점이라고 생각합니다.
 
 이제 남은 과제는 구현된 이 기능들을 실제 서비스에 안정적으로 적용하고, 실제 사용자 환경에서의 요구와 피드백을 반영하면서 불필요한 복잡성을 줄이고 실용성을 강화하는 것입니다. 이를 통해 개발 과정에서 가졌던 고민들을 해소하고, 사용자에게 더 나은 가치를 전달할 수 있다고 믿습니다.
+
+---
+
+## 🛠 기술 스택
+
+### 🖥️ Frontend
+
+- React
+- Typescript
+- Styled Components
+- event-source-polyfill
+- Vercel
+
+### 💯 Backend
+
+- Spring boot
+- Java
+- Server-Sent Events (SSE)
+- MySQL
+- Redis
+- Kafka
+- Zookeeper
+- Docker, Docker Compose,
+- Oracle Cloud
+- Nginx
