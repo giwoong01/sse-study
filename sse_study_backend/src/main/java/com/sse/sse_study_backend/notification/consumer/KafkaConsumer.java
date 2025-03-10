@@ -1,5 +1,6 @@
 package com.sse.sse_study_backend.notification.consumer;
 
+import com.sse.sse_study_backend.global.discord.util.DiscordWebhookUtil;
 import com.sse.sse_study_backend.notification.application.SseEmitterManager;
 import com.sse.sse_study_backend.notification.domain.repository.EmitterRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +14,9 @@ public class KafkaConsumer {
 
     private final SseEmitterManager sseEmitterManager;
     private final EmitterRepository emitterRepository;
+    private final DiscordWebhookUtil discordWebhookUtil;
 
-    @KafkaListener(topics = "sse_notifications", groupId = "sse-group")
+    @KafkaListener(topics = "#{@kafkaProperties.sseNotificationTopicName}", groupId = "#{@kafkaProperties.sseNotificationGroupId}")
     public void listen(String message) {
         String[] parts = message.split("\\|");
 
@@ -30,6 +32,20 @@ public class KafkaConsumer {
         if (emitter != null) {
             sseEmitterManager.sendToClient(emitter, emitterId, content);
         }
+    }
+
+    @KafkaListener(topics = "#{@kafkaProperties.discordTopicName}", groupId = "#{@kafkaProperties.discordGroupId}")
+    public void discordWebhook(String message) {
+        String[] parts = message.split("\\|");
+
+        if (parts.length < 2) {
+            return;
+        }
+
+        String memberId = parts[0];
+        String content = parts[1];
+
+        discordWebhookUtil.sendDiscordMessage(content, memberId);
     }
 
 }

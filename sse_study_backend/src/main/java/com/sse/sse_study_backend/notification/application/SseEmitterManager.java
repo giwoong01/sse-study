@@ -1,5 +1,6 @@
 package com.sse.sse_study_backend.notification.application;
 
+import com.sse.sse_study_backend.global.properties.KafkaProperties;
 import com.sse.sse_study_backend.member.domain.Member;
 import com.sse.sse_study_backend.notification.domain.repository.EmitterRepository;
 import com.sse.sse_study_backend.notification.exception.EmitterCallbackException;
@@ -25,6 +26,7 @@ public class SseEmitterManager {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     private final EmitterRepository emitterRepository;
+    private final KafkaProperties kafkaProperties;
 
     public SseEmitter connect(final Long memberId) {
         String emitterId = String.valueOf(memberId);
@@ -35,6 +37,9 @@ public class SseEmitterManager {
         registerEmitterCallbacks(emitter, emitterId);
 
         sendToClient(emitter, emitterId, "이벤트 스트림 생성 memberId: " + memberId);
+
+        String data = emitterId + "|해당 멤버와 연결된 SERVER_ID: " + SERVER_ID;
+        kafkaTemplate.send(kafkaProperties.getDiscordTopicName(), data);
 
         return emitter;
     }
@@ -63,7 +68,7 @@ public class SseEmitterManager {
 
         if (serverId != null) {
             String data = emitterId + "|" + message;
-            kafkaTemplate.send("sse_notifications", serverId, data);
+            kafkaTemplate.send(kafkaProperties.getSseNotificationTopicName(), serverId, data);
         }
     }
 

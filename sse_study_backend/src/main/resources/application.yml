@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: local
+    active: ${SPRING_PROFILES_ACTIVE:local}
 
   data:
     redis:
@@ -26,6 +26,8 @@ logging:
   level:
     org.hibernate.sql: debug
     org.hibernate.type: trace
+  discord:
+    webhook-url: ${logging.discord.webhook-url}
 
 jwt:
   secret: ${jwt.secret}
@@ -35,6 +37,8 @@ token:
       access: ${token.expire.time.access}
 
 kafka:
-  topic-name: ${kafka.topic-name}
-  group-id: ${kafka.group-id}
   bootstrap-servers: ${kafka.bootstrap-servers}
+  sse-notification-topic-name: ${kafka.sse-notification-topic-name}
+  sse-notification-group-id: ${kafka.sse-notification-group-id}
+  discord-topic-name: ${kafka.discord-topic-name}
+  discord-group-id: ${kafka.discord-group-id}
