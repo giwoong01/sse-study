@@ -8,13 +8,14 @@ import {
 import { MemberInfo, MembersInfo } from "../types/MemberInfo.ts";
 import styled from "styled-components";
 import Button from "../components/Button.tsx";
-import { useSendMessage } from "../hooks/useSendMessage.ts";
+import { useSendMessage, useSendAllMessage } from "../hooks/useSendMessage.ts";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [memberInfo, setMemberInfo] = useState<MemberInfo>();
   const [allMembers, setAllMembers] = useState<MembersInfo>();
   const { handleSend } = useSendMessage();
+  const { handleSendAll } = useSendAllMessage();
 
   const handleLoginPageClick = async () => {
     const logoutSuccess = await MemberLogoutApi();
@@ -36,6 +37,15 @@ const Home: React.FC = () => {
     try {
       await handleSend(targetMemberId);
       alert("메시지가 성공적으로 전송되었습니다.");
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
+  const handleSendAllMessage = async () => {
+    try {
+      await handleSendAll();
+      alert("모든 사용자에게 메시지가 성공적으로 전송되었습니다.");
     } catch (error: any) {
       alert(error.message);
     }
@@ -83,7 +93,12 @@ const Home: React.FC = () => {
         </Button>
       </LeftSection>
       <RightSection>
-        <Title>전체 사용자</Title>
+        <Header>
+          <Title>전체 사용자</Title>
+          <SendButton onClick={() => handleSendAllMessage()}>
+            Send to All
+          </SendButton>
+        </Header>
         <MemberList>
           {Array.isArray(allMembers) &&
             allMembers?.map((member) => (
@@ -130,6 +145,13 @@ const RightSection = styled.div`
   padding: 1rem;
   border-left: 1px solid #ccc;
   overflow-y: auto;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 `;
 
 const Title = styled.h2`
