@@ -33,6 +33,12 @@ public class NotificationController {
         return ResponseEntity.ok("OK");
     }
 
+    @PostMapping("/send/all")
+    public ResponseEntity<String> sendAll(@AuthenticatedMemberId Long memberId) {
+        notificationService.sendAll(memberId);
+        return ResponseEntity.ok("OK");
+    }
+
     @GetMapping("/notifications")
     public ResponseEntity<NotificationsResDto> getNotifications(@AuthenticatedMemberId Long memberId) {
         return ResponseEntity.ok(notificationService.getNotifications(memberId));

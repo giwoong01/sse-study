@@ -42,3 +42,4 @@ kafka:
   sse-notification-group-id: ${kafka.sse-notification-group-id}
   discord-topic-name: ${kafka.discord-topic-name}
   discord-group-id: ${kafka.discord-group-id}
+  broadcast-topic-name: ${kafka.broadcast-topic}

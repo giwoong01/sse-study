@@ -40,6 +40,15 @@ public class NotificationService {
         sseEmitterManager.send(targetMember, message);
     }
 
+    @Transactional
+    public void sendAll(Long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
+
+        String message = "name: " + member.getName() + "님이 📢전체 알림을 보냈습니다.";
+
+        sseEmitterManager.sendAll(message);
+    }
+
     public NotificationsResDto getNotifications(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
 

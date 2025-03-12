@@ -10,9 +10,10 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "kafka")
 public class KafkaProperties {
+    private String bootstrapServers;
     private String sseNotificationTopicName;
     private String sseNotificationGroupId;
     private String discordTopicName;
     private String discordGroupId;
-    private String bootstrapServers;
+    private String broadcastTopicName;
 }

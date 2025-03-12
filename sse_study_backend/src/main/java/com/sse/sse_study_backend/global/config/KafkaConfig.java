@@ -34,6 +34,11 @@ public class KafkaConfig {
         return new NewTopic(kafkaProperties.getDiscordTopicName(), 3, (short) 1);
     }
 
+    @Bean
+    public NewTopic broadcastTopic() {
+        return new NewTopic(kafkaProperties.getBroadcastTopicName(), 1, (short) 1);
+    }
+
     // Producer 설정
     @Bean
     public ProducerFactory<String, String> producerFactory() {
@@ -81,6 +86,23 @@ public class KafkaConfig {
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return config;
+    }
+
+    @Bean
+    public ConsumerFactory<String, String> broadConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        return new DefaultKafkaConsumerFactory<>(config);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> broadKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(broadConsumerFactory());
+        return factory;
     }
 
 }

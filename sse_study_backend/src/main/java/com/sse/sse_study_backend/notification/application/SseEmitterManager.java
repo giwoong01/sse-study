@@ -72,6 +72,10 @@ public class SseEmitterManager {
         }
     }
 
+    public void sendAll(String message) {
+        kafkaTemplate.send(kafkaProperties.getBroadcastTopicName(), message);
+    }
+
     public void sendToClient(SseEmitter emitter, String emitterId, Object data) {
         try {
             emitter.send(SseEmitter.event()
