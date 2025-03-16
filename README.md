@@ -356,6 +356,30 @@ NGINX 설정까지 마치면 서버 세팅은 끝이 났습니다.
   - 비동기 처리로 서버 부하가 감소되고, 확장성이 높습니다.
   - 하지만 Kafka 설정 및 운영이 필요합니다.
 
+#### 2. 전체 알림 전송
+
+전체 알림에서의 Producer와 Consumer의 역할이 있습니다.
+
+Producer의 역할은 전체 broadcast 토픽에 전체 공지 메시지를 kafka에 보냅니다.
+
+간단합니다.
+
+```java
+    public void sendAll(String message) {
+        kafkaTemplate.send(kafkaProperties.getBroadcastTopicName(), message);
+    }
+```
+
+Consumer의 역할은 broadcast 토픽의 메시지를 수신합니다.
+
+Redis에서 모든 서버에 연결된 사용자 목록을 조회한 후 모든 사용자에게 공지를 전송합니다.
+
+여기서 중요한 점은 groupId가 각 서버마다 달라야 한다는 점입니다. 그래야 모든 서버가 동일한 메시지를 받습니다.
+
+|               `동작과정`                |
+| :-------------------------------------: |
+| <img src="images/16.png" width="500" /> |
+
 ---
 
 ## 🛠 기술 스택
