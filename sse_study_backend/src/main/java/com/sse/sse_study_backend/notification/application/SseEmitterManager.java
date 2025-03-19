@@ -1,12 +1,12 @@
 package com.sse.sse_study_backend.notification.application;
 
+import com.sse.sse_study_backend.global.config.ServerIdProvider;
 import com.sse.sse_study_backend.global.properties.KafkaProperties;
 import com.sse.sse_study_backend.member.domain.Member;
 import com.sse.sse_study_backend.notification.domain.repository.EmitterRepository;
 import com.sse.sse_study_backend.notification.exception.EmitterCallbackException;
 import com.sse.sse_study_backend.notification.exception.SendFailedException;
 import java.io.IOException;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -20,25 +20,26 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class SseEmitterManager {
 
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60 * 24;
-    private static final String SERVER_ID = UUID.randomUUID().toString();
 
     private final RedisTemplate<String, String> redisTemplate;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     private final EmitterRepository emitterRepository;
+    private final ServerIdProvider serverIdProvider;
     private final KafkaProperties kafkaProperties;
 
     public SseEmitter connect(final Long memberId) {
         String emitterId = String.valueOf(memberId);
         SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(DEFAULT_TIMEOUT));
+        String serverId = serverIdProvider.getServerId();
 
-        redisTemplate.opsForHash().put("sse_connections", emitterId, SERVER_ID);
+        redisTemplate.opsForHash().put("sse_connections", emitterId, serverId);
 
         registerEmitterCallbacks(emitter, emitterId);
 
         sendToClient(emitter, emitterId, "이벤트 스트림 생성 memberId: " + memberId);
 
-        String data = emitterId + "|해당 멤버와 연결된 SERVER_ID: " + SERVER_ID;
+        String data = emitterId + "|해당 멤버와 연결된 SERVER_ID: " + serverId;
         kafkaTemplate.send(kafkaProperties.getDiscordTopicName(), data);
 
         return emitter;

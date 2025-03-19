@@ -52,7 +52,7 @@ public class KafkaConsumer {
         discordWebhookUtil.sendDiscordMessage(content, memberId);
     }
 
-    @KafkaListener(topics = "broadcast", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
+    @KafkaListener(topics = "broadcast", groupId = "#{serverIdProvider.getServerId()}")
     public void listenAll(String message) {
         Map<Object, Object> connectedUsers = redisTemplate.opsForHash().entries("sse_connections");
 
