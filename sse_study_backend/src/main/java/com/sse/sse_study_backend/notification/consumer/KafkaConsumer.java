@@ -5,11 +5,13 @@ import com.sse.sse_study_backend.notification.application.SseEmitterManager;
 import com.sse.sse_study_backend.notification.domain.repository.EmitterRepository;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KafkaConsumer {
@@ -20,7 +22,7 @@ public class KafkaConsumer {
     private final EmitterRepository emitterRepository;
     private final DiscordWebhookUtil discordWebhookUtil;
 
-    @KafkaListener(topics = "sse_notifications", groupId = "sse-group")
+    @KafkaListener(topics = "sse_notifications", groupId = "#{serverIdProvider.getServerId()}")
     public void listen(String message) {
         String[] parts = message.split("\\|");
 

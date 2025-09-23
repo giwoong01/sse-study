@@ -69,7 +69,7 @@ public class SseEmitterManager {
 
         if (serverId != null) {
             String data = emitterId + "|" + message;
-            kafkaTemplate.send(kafkaProperties.getSseNotificationTopicName(), serverId, data);
+            kafkaTemplate.send(kafkaProperties.getSseNotificationTopicName(), emitterId, data);
         }
     }
 
